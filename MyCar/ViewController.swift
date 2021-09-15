@@ -11,8 +11,17 @@ import CoreData
 class ViewController: UIViewController {
     
     var context: NSManagedObjectContext!
+    var car: Car!
+    
+    lazy var dateFormatter: DateFormatter = {
+        let df = DateFormatter()
+        df.dateStyle = .short
+        df.timeStyle = .none
+        return df
+    }()
     
     private var segmentedControl = UISegmentedControl(items: ["Lamborgini", "Ferrari", "Mercedes", "Nissan", "BMW"])
+    
     private var markLabel = UILabel()
     private var modelLabel = UILabel()
     private var carImageView = UIImageView()
@@ -28,6 +37,18 @@ class ViewController: UIViewController {
         
         getDataFromFile()
         
+        let fetchRequest: NSFetchRequest<Car> = Car.fetchRequest()
+        let mark = segmentedControl.titleForSegment(at: 0)
+        fetchRequest.predicate = NSPredicate(format: "mark == %@", mark!)
+
+        do {
+            let results = try context.fetch(fetchRequest)
+            car = results[0]
+            insertDataFrom(selectedCar: car)
+        } catch {
+            print(error.localizedDescription)
+        }
+        
         viewSetup()
         markLabelSetup()
         modelLabelSetup()
@@ -39,6 +60,13 @@ class ViewController: UIViewController {
         myChoiceImageViewSetup()
         startButtonSetup()
         rateButtonSetup()
+        
+        
+    }
+    
+    override func didReceiveMemoryWarning() {
+      super.didReceiveMemoryWarning()
+      // Dispose of any resources that can be recreated.
     }
     
     
@@ -51,7 +79,6 @@ class ViewController: UIViewController {
     }
     
     private func markLabelSetup() {
-        markLabel.text = "Mark"
         markLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(markLabel)
         NSLayoutConstraint.activate([
@@ -61,7 +88,6 @@ class ViewController: UIViewController {
     }
     
     private func modelLabelSetup() {
-        modelLabel.text = "Model"
         modelLabel.font = UIFont.boldSystemFont(ofSize: 20)
         modelLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(modelLabel)
@@ -72,8 +98,6 @@ class ViewController: UIViewController {
     }
     
     private func carImageViewSetup() {
-        
-        carImageView.image = UIImage(named: "lambo")
         carImageView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(carImageView)
         NSLayoutConstraint.activate([
@@ -86,7 +110,6 @@ class ViewController: UIViewController {
     }
     
     private func lastTimeStartedLabelSetup() {
-        lastTimeStartedLabel.text = "Last time started:"
         lastTimeStartedLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(lastTimeStartedLabel)
         NSLayoutConstraint.activate([
@@ -95,7 +118,6 @@ class ViewController: UIViewController {
         ])
     }
     private func numberOfTripsLabelSetup() {
-        numberOfTripsLabel.text = "Number of trips:"
         numberOfTripsLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(numberOfTripsLabel)
         NSLayoutConstraint.activate([
@@ -104,7 +126,6 @@ class ViewController: UIViewController {
         ])
     }
     private func ratingLabelSetup() {
-        ratingLabel.text = "Raiting: X / 10.0"
         ratingLabel.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(ratingLabel)
         NSLayoutConstraint.activate([
@@ -114,7 +135,8 @@ class ViewController: UIViewController {
     }
     
     private func segmentedControlSetup() {
-        
+        segmentedControl.selectedSegmentIndex = 0
+        segmentedControl.addTarget(self, action: #selector(changeSelected), for: .valueChanged)
         segmentedControl.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(segmentedControl)
         NSLayoutConstraint.activate([
@@ -123,6 +145,20 @@ class ViewController: UIViewController {
             segmentedControl.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             segmentedControl.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
+    }
+    
+    @objc func changeSelected (_ sender: UISegmentedControl) {
+        let fetchRequest: NSFetchRequest<Car> = Car.fetchRequest()
+        let mark = segmentedControl.titleForSegment(at: segmentedControl.selectedSegmentIndex)
+        fetchRequest.predicate = NSPredicate(format: "mark == %@", mark!)
+        
+        do {
+            let results = try context.fetch(fetchRequest)
+            car = results[0]
+            insertDataFrom(selectedCar: car)
+        } catch {
+            print(error.localizedDescription)
+        }
     }
     
     private func myChoiceImageViewSetup() {
@@ -142,6 +178,7 @@ class ViewController: UIViewController {
         startButton.setTitle("Start Engine", for: .normal)
         startButton.backgroundColor = .blue
         startButton.layer.cornerRadius = 5
+        startButton.addTarget(self, action: #selector(startEnginePressed), for: .touchUpInside)
         
         startButton.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(startButton)
@@ -153,10 +190,23 @@ class ViewController: UIViewController {
         ])
     }
     
+    @objc func startEnginePressed (_ sender: UIButton) {
+        car.timesDriven += 1
+        car.lastStarted = Date()
+        
+        do {
+            try context.save()
+            insertDataFrom(selectedCar: car)
+        } catch let error as NSError {
+            print(error.localizedDescription)
+        }
+    }
+    
     private func rateButtonSetup() {
         rateButton.setTitle("Rate", for: .normal)
         rateButton.backgroundColor = .blue
         rateButton.layer.cornerRadius = 5
+        rateButton.addTarget(self, action: #selector(rateItPressed), for: .touchUpInside)
         
         rateButton.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(rateButton)
@@ -166,6 +216,58 @@ class ViewController: UIViewController {
             rateButton.heightAnchor.constraint(equalToConstant: 30),
             rateButton.widthAnchor.constraint(equalToConstant: 120)
         ])
+    }
+    
+    @objc func rateItPressed (_ sender: UIButton) {
+        let alertController = UIAlertController(title: "Rate it", message: "Rate this car please", preferredStyle: .alert)
+        let rateAction = UIAlertAction(title: "Rate", style: .default) { action in
+            if let text = alertController.textFields?.first?.text {
+                self.update(rating: (text as NSString).doubleValue)
+            }
+        }
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .default)
+        
+        alertController.addTextField { textField in
+            textField.keyboardType = .numberPad
+        }
+        
+        alertController.addAction(rateAction)
+        alertController.addAction(cancelAction)
+        present(alertController, animated: true, completion: nil)
+    }
+    
+    
+    private func update(rating: Double) {
+        car.rating = rating
+        
+        do {
+            try context.save()
+            insertDataFrom(selectedCar: car)
+        } catch let error as NSError {
+            let alertController = UIAlertController(title: "Wrong value", message: "Wrong input", preferredStyle: .alert)
+            let okAction = UIAlertAction(title: "OK", style: .default)
+            
+            alertController.addAction(okAction)
+            present(alertController, animated: true, completion: nil)
+            print(error.localizedDescription)
+        }
+    }
+    
+    //-------------------------------------------------
+    // MARK: - CoreData
+    //-------------------------------------------------
+    
+    private func insertDataFrom (selectedCar car: Car) {
+        carImageView.image = UIImage(data: car.imageData!)
+        markLabel.text = car.mark
+        modelLabel.text = car.model
+        myChoiceImageView.isHidden = !(car.myChoice)
+        ratingLabel.text = "Rating: \(car.rating) / 10"
+        numberOfTripsLabel.text = "Number of trips: \(car.timesDriven)"
+        
+        lastTimeStartedLabel.text = "Last time started: \(dateFormatter.string(from: car.lastStarted!))"
+        segmentedControl.backgroundColor = car.tintColor as? UIColor
     }
     
     private func getDataFromFile() {
@@ -199,8 +301,8 @@ class ViewController: UIViewController {
             car.timesDriven = carDictionary["timesDriven"] as! Int16
             car.myChoice = carDictionary["myChoice"] as! Bool
             
-            let imageName = carDictionary["imageName"] as? String
-            let image = UIImage(named: imageName!)
+            guard let imageName = carDictionary["imageName"] as? String else { return }
+            let image = UIImage(named: imageName)
             let imageData = image!.pngData()
             car.imageData = imageData
             
@@ -208,10 +310,7 @@ class ViewController: UIViewController {
                 car.tintColor = getColor(colorDictionary: colorDictionary)
             }
             
-            
         }
-        
-        
     }
     
     private func getColor(colorDictionary: [String : Float]) -> UIColor {

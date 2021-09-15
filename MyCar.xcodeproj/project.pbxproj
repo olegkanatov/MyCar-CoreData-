@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		19691A8326F0A1CE0045DCB0 /* data.plist in Resources */ = {isa = PBXBuildFile; fileRef = 19691A8226F0A1CE0045DCB0 /* data.plist */; };
 		198A65F926EF5F5100096D85 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 198A65F826EF5F5100096D85 /* AppDelegate.swift */; };
 		198A65FB26EF5F5100096D85 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 198A65FA26EF5F5100096D85 /* SceneDelegate.swift */; };
 		198A65FD26EF5F5100096D85 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 198A65FC26EF5F5100096D85 /* ViewController.swift */; };
@@ -16,6 +17,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		19691A8226F0A1CE0045DCB0 /* data.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = data.plist; sourceTree = "<group>"; };
 		198A65F526EF5F5100096D85 /* MyCar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MyCar.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		198A65F826EF5F5100096D85 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		198A65FA26EF5F5100096D85 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -63,6 +65,7 @@
 				198A660626EF5F5400096D85 /* LaunchScreen.storyboard */,
 				198A660926EF5F5400096D85 /* Info.plist */,
 				198A660126EF5F5100096D85 /* MyCar.xcdatamodeld */,
+				19691A8226F0A1CE0045DCB0 /* data.plist */,
 			);
 			path = MyCar;
 			sourceTree = "<group>";
@@ -125,6 +128,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				198A660826EF5F5400096D85 /* LaunchScreen.storyboard in Resources */,
+				19691A8326F0A1CE0045DCB0 /* data.plist in Resources */,
 				198A660526EF5F5400096D85 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
