@@ -162,7 +162,7 @@ class ViewController: UIViewController {
     }
     
     private func myChoiceImageViewSetup() {
-        myChoiceImageView.backgroundColor = .blue
+        myChoiceImageView.image = UIImage(named: "myChoice")
         myChoiceImageView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(myChoiceImageView)
         NSLayoutConstraint.activate([
